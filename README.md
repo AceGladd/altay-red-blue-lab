@@ -1,43 +1,49 @@
 # Altay Deception Network Simulation
 
-Bu proje, altyapı güvenliği, zafiyet yönetimi ve siber aldatma (deception) taktiklerini test etmek amacıyla oluşturulmuş 2 makineli bir laboratuvar ortamıdır. 
+Bu proje, altyapı güvenliği, zafiyet yönetimi ve siber aldatma (deception) taktiklerini test etmek amacıyla oluşturulmuş 3 makineli bir laboratuvar ortamıdır. 
 
-Temel amacı, DNS üzerinde tanımlanan sahte kayıtlar (AXFR zafiyeti) aracılığıyla saldırganlara daha büyük bir ağdaymış yanılsaması (deception) vermektir. Böylece hem Kırmızı Takım (Red Team) saldırı senaryolarını çalışabilir hem de Mavi Takım (Blue Team) Wazuh SIEM üzerinden bu saldırıları tespit etmeyi öğrenebilir.
+Temel amacı, hem savunma hem de saldırı operasyonlarını (Red/Blue Team) izole bir ortamda pratik edebilmek ve DNS yanıltmaları üzerinden saldırganı tespit/takip etme becerilerini geliştirmektir.
 
 ## Makine Bilgileri ve Roller
 
-Laboratuvar, Vagrant ve VMware/VirtualBox altyapısı üzerinde çalışan iki Ubuntu 22.04 makinesinden oluşmaktadır:
+Laboratuvar, Vagrant altyapısı üzerinde çalışan üç makineden oluşmaktadır:
 
-* **`blue-server` (192.168.56.20)**: Savunma ve Aldatma (Deception) makinesi. 
-  - Wazuh Manager, Indexer ve Dashboard bu makinede çalışır. 
-  - Üzerindeki zafiyetli Bind9 DNS sunucusu, ağda `nfs`, `docker`, `pam` gibi birçok makine varmış gibi davranarak saldırganları asıl hedefe (`red-target`) yönlendirir.
+* **`blue-server` (Savunma Merkezi & SIEM - 192.168.56.20)**: 
+  - Ağın izlenmesi ve saldırıların tespiti için Wazuh Manager, Indexer ve Dashboard içerir. 
+  - Kendi üzerindeki DNS sunucusu sahte (deception) kayıtlar barındırarak saldırganları tuzağa düşürmeyi hedefler.
   
-* **`red-target` (192.168.56.10)**: Kurban / Hedef makine. 
-  - İçerisinde hiçbir otomatik yapılandırma bulunmayan temiz bir makinedir. 
-  - Zafiyet senaryoları ve saldırı hedefleri manuel olarak bu makine üzerinde uygulanacaktır.
+* **`red-target` (Kurban / Zafiyetli Sunucu - 192.168.56.10)**: 
+  - Temiz, varsayılan bir Ubuntu 22.04 makinesidir. 
+  - Zafiyet senaryoları ve saldırı pratikleri manuel olarak bu makine üzerinde uygulanır.
+
+* **`kali-attacker` (Saldırgan Makinesi - 192.168.56.30)**: 
+  - CLI tabanlı (arayüzsüz) Kali Linux dağıtımıdır. 
+  - Ağ keşfi, sömürü (exploit) ve Red Team operasyonlarının yürütüldüğü ana saldırı makinesidir.
 
 ## Dizin Yapısı
 
-- `blue_team/`: Mavi takımın tespit kural setleri, Wazuh yapılandırmaları ve analiz betiklerini saklayacağı dizin.
-- `red_team/`: Kırmızı takımın sömürü (exploit) araçlarını, payload'ları ve zafiyet senaryolarını barındıracağı dizin.
-- `scripts/`: Vagrant ayağa kalkarken otomatik çalışan temel altyapı kurulum dosyaları (`deploy_wazuh_manager.sh` ve `setup_dns_deception.sh`).
-- `Vagrantfile`: Sanal makinelerin ağ ve donanım yapılandırmalarını barındıran temel dosya.
+- `blue_team/`: Mavi takımın tespit kural setleri, analiz scriptleri ve yapılandırmaları için.
+- `red_team/`: Kırmızı takımın sömürü (exploit) araçları ve payload'ları için.
+- `scripts/`: Altyapı ayağa kalkarken otomatik çalışan yapılandırma betiklerini barındırır.
 
 ## Kurulum ve Kullanım
 
-Laboratuvarı başlatmak ve makineleri ayağa kaldırmak için terminalde şu komutu çalıştırın:
+Laboratuvardaki tüm makineleri başlatmak için:
 ```bash
 vagrant up
 ```
 
-Makineler başarıyla oluşturulduktan sonra, SSH ile içlerine erişmek için aşağıdaki komutları kullanabilirsiniz:
-
+Sadece saldırgan (Kali) makinesini başlatmak isterseniz:
 ```bash
-# Savunma sunucusuna bağlanmak için:
-vagrant ssh blue-server
-
-# Hedef makineye bağlanmak için:
-vagrant ssh red-target
+vagrant up kali-attacker
 ```
 
-Laboratuvarı durdurmak için `vagrant halt`, tamamen silmek için ise `vagrant destroy -f` komutlarını kullanabilirsiniz.
+Makineler çalışmaya başladıktan sonra, SSH ile içlerine erişmek için aşağıdaki komutları kullanın:
+
+```bash
+vagrant ssh blue-server
+vagrant ssh red-target
+vagrant ssh kali-attacker
+```
+
+Laboratuvarı tamamen silmek için `vagrant destroy -f` komutunu kullanabilirsiniz.
