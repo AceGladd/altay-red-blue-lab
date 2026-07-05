@@ -1,0 +1,14 @@
+# Vagrant specific
+.vagrant/
+*.log
+
+# IDEs and Editors
+.vscode/
+.idea/
+.vs/
+*.swp
+*.bak
+
+# OS generated files
+.DS_Store
+Thumbs.db
