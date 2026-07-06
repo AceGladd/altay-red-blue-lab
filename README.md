@@ -2,48 +2,43 @@
 
 Bu proje, altyapı güvenliği, zafiyet yönetimi ve siber aldatma (deception) taktiklerini test etmek amacıyla oluşturulmuş 3 makineli bir laboratuvar ortamıdır. 
 
-Temel amacı, hem savunma hem de saldırı operasyonlarını (Red/Blue Team) izole bir ortamda pratik edebilmek ve DNS yanıltmaları üzerinden saldırganı tespit/takip etme becerilerini geliştirmektir.
-
 ## Makine Bilgileri ve Roller
 
-Laboratuvar, Vagrant altyapısı üzerinde çalışan üç makineden oluşmaktadır:
+* **`blue-server` (192.168.56.20)**: Savunma Merkezi & SIEM (Wazuh). Deception (sahte) DNS kayıtlarını barındırır.
+* **`red-target` (192.168.56.10)**: Kurban Sunucu. Üzerinde bilinçli olarak bırakılmış 6 farklı zafiyet vektörü bulunur.
+* **`kali-attacker` (192.168.56.30)**: Saldırgan Makinesi. Otomatize saldırı betikleri bu makineden çalıştırılır.
 
-* **`blue-server` (Savunma Merkezi & SIEM - 192.168.56.20)**: 
-  - Ağın izlenmesi ve saldırıların tespiti için Wazuh Manager, Indexer ve Dashboard içerir. 
-  - Kendi üzerindeki DNS sunucusu sahte (deception) kayıtlar barındırarak saldırganları tuzağa düşürmeyi hedefler.
-  
-* **`red-target` (Kurban / Zafiyetli Sunucu - 192.168.56.10)**: 
-  - Temiz, varsayılan bir Ubuntu 22.04 makinesidir. 
-  - Zafiyet senaryoları ve saldırı pratikleri manuel olarak bu makine üzerinde uygulanır.
+## Barındırılan Zafiyet Vektörleri (APT Simülasyonu)
 
-* **`kali-attacker` (Saldırgan Makinesi - 192.168.56.30)**: 
-  - CLI tabanlı (arayüzsüz) Kali Linux dağıtımıdır. 
-  - Ağ keşfi, sömürü (exploit) ve Red Team operasyonlarının yürütüldüğü ana saldırı makinesidir.
+Laboratuvarda tam teşekküllü bir siber saldırı zinciri (Kill Chain) simüle edilebilmesi için şu 8 zafiyet bulunur:
 
-## Dizin Yapısı
+**İlk Erişim (Initial Access):**
+1. **DNS Zone Transfer (AXFR):** `blue-server` üzerinde sahte ağ haritasını sızdıran zafiyet.
+2. **Web Komut Enjeksiyonu (OS Command Injection):** Web uygulaması üzerinden doğrudan kurban sisteme Reverse Shell alınabilmesi.
+3. **NFS `no_root_squash` Zafiyeti:** Dışarıya root yetkisiyle açık `/home` dizini paylaşımı.
+4. **Açığa Çıkmış Şifresiz SSH Anahtarı:** NFS üzerinden `developer` kullanıcısına ait `id_rsa` anahtarının çalınıp hedefe sızılması (Lateral Movement).
 
-- `blue_team/`: Mavi takımın tespit kural setleri, analiz scriptleri ve yapılandırmaları için.
-- `red_team/`: Kırmızı takımın sömürü (exploit) araçları ve payload'ları için.
-- `scripts/`: Altyapı ayağa kalkarken otomatik çalışan yapılandırma betiklerini barındırır.
+**Kalıcılık (Persistence):**
+5. **Yetkilendirilmiş Anahtar (Authorized Keys) Ekleme:** Hedefteki `.ssh/authorized_keys` dosyasına şifresiz arka kapı (backdoor) anahtarı bırakılması.
+
+**Yetki Yükseltme (Privilege Escalation):**
+6. **SUID (Gizli Kopya):** SUID biti aktif `/usr/local/bin/.hidden_cp` ile kritik dosya kopyalama.
+7. **Sudoers Yanlış Yapılandırması:** `developer` kullanıcısının root olarak `find` komutu çalıştırabilmesi.
+
+**Veri Sızdırma (Exfiltration):**
+8. **DNS Tünelleme:** Sistemdeki kritik bir dosyanın DNS TXT kayıtlarıyla dışarı sızdırılması.
 
 ## Kurulum ve Kullanım
 
-Laboratuvardaki tüm makineleri başlatmak için:
 ```bash
 vagrant up
 ```
 
-Sadece saldırgan (Kali) makinesini başlatmak isterseniz:
+Makineler çalışmaya başladıktan sonra, Kali makinesinden tüm saldırı zincirini tek bir script ile başlatmak ve log oluşturmak için:
 ```bash
-vagrant up kali-attacker
-```
-
-Makineler çalışmaya başladıktan sonra, SSH ile içlerine erişmek için aşağıdaki komutları kullanın:
-
-```bash
-vagrant ssh blue-server
-vagrant ssh red-target
 vagrant ssh kali-attacker
+cd ~/red_team
+./test_apt_chain.sh
 ```
 
-Laboratuvarı tamamen silmek için `vagrant destroy -f` komutunu kullanabilirsiniz.
+Mavi Takım (Blue Team) üyeleri Wazuh SIEM üzerinden bu atakların loglarını ve alarmlarını inceleyebilir.

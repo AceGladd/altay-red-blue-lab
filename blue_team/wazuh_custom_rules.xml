@@ -1,0 +1,16 @@
+<group name="altay_lab,custom_rules,">
+
+  <!-- ======================================================== --> HEDİYE KURAL :)
+  <!-- 1. DNS ZONE TRANSFER (AXFR) TESPITI                       --> 
+  <!-- blue-server bind9 syslog'undan AXFR isteği yakalar        -->
+  <!-- ======================================================== -->
+  <rule id="100001" level="10">
+    <if_sid>1002</if_sid>
+    <match>AXFR started</match>
+    <description>Altay Lab: DNS Zone Transfer (AXFR) saldırısı tespit edildi - altay.local zonu sızdırılıyor!</description>
+    <group>dns_axfr,attack,</group>
+    <mitre>
+      <id>T1590.002</id>
+    </mitre>
+  </rule>
+</group>
