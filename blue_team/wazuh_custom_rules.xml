@@ -1,6 +1,6 @@
 <group name="altay_lab,custom_rules,">
 
-  <!-- ======================================================== --> HEDİYE KURAL :)
+  <!-- ======================================================== -->
   <!-- 1. DNS ZONE TRANSFER (AXFR) TESPITI                       --> 
   <!-- blue-server bind9 syslog'undan AXFR isteği yakalar        -->
   <!-- ======================================================== -->

@@ -1,32 +1,6 @@
 ---
-- name: Hardening Red Target
+- name: Hardening Red Target (Blue Team Task)
   hosts: red-target
   become: yes
   tasks:
-    - name: Fix NFS Export (Remove no_root_squash)
-      lineinfile:
-        path: /etc/exports
-        regexp: '^/mnt/shared_data'
-        line: '/mnt/shared_data *(rw,sync,root_squash,no_subtree_check)'
-      notify: Restart NFS
-
-    - name: Fix Weak SSH Password
-      user:
-        name: developer
-        password_lock: yes
-
-    - name: Remove SUID from hidden cp
-      file:
-        path: /usr/local/bin/.hidden_cp
-        mode: 'u-s'
-
-    - name: Fix Sudoers Misconfig
-      file:
-        path: /etc/sudoers.d/developer
-        state: absent
-
-  handlers:
-    - name: Restart NFS
-      service:
-        name: nfs-kernel-server
-        state: restarted
+    # TODO: Define hardening tasks here
