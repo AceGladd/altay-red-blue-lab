@@ -14,6 +14,7 @@ Vagrant.configure("2") do |config|
     end
     blue.vm.provision "shell", path: "scripts/setup_dns_deception.sh"
     blue.vm.provision "shell", path: "scripts/deploy_wazuh_manager.sh"
+    blue.vm.provision "shell", env: {"TAILSCALE_AUTH_KEY" => ENV["TAILSCALE_AUTH_KEY"]}, path: "scripts/setup_tailscale.sh"
   end
   config.vm.define "red-target" do |red|
     red.vm.box = "bento/ubuntu-22.04"

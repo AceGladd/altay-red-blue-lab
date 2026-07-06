@@ -35,34 +35,19 @@ Sisteminizde aşağıdaki yazılımların kurulu olduğundan emin olmalısınız
 * **Vagrant** (Makineleri yönetmek için): [İndirme Bağlantısı](https://developer.hashicorp.com/vagrant/install/vmware)
 * **VMware Workstation/Player veya VirtualBox** (Sanallaştırma altyapısı için)
 
-### 2. Genel Kurulum (Makineleri Başlatma)
-Terminal veya komut satırını açıp, projenin bulunduğu klasöre (`altay-red-blue-lab`) gidin. Ardından aşağıdaki komutu çalıştırarak laboratuvarı inşa etmeye başlayın:
-
+### 2. Yerel (Kendi Bilgisayarınızda) Çalışma
+Eğer uzaktan bağlantıya ihtiyacınız yoksa ve sadece kendi bilgisayarınızda çalışacaksanız, herhangi bir Auth Key girmeden doğrudan başlatabilirsiniz (Tailscale kurulumu otomatik atlanacaktır):
 ```bash
 vagrant up
 ```
-Bu komut; `blue-server`, `red-target` ve `kali-attacker` makinelerini sırasıyla indirecek, kuracak ve tüm zafiyet ile ağ ayarlarını otomatik olarak yapılandıracaktır.
-
-### 3. Makinelere Bağlanma
-Kurulum tamamlandıktan sonra, herhangi bir makineye terminal üzerinden şifresiz olarak doğrudan bağlanabilirsiniz:
-
-**Savunma (Wazuh & DNS) Sunucusuna Bağlanmak İçin:**
+Makinelere kendi bilgisayarınızdan bağlanmak için:
 ```bash
 vagrant ssh blue-server
-```
-*(Wazuh Dashboard'a tarayıcınızdan `https://localhost:8443/` adresinden ulaşabilirsiniz).*
-
-**Kurban (Zafiyetli) Sunucuya Bağlanmak İçin:**
-```bash
 vagrant ssh red-target
-```
-
-**Saldırgan (Kali Linux) Makinesine Bağlanmak İçin:**
-```bash
 vagrant ssh kali-attacker
 ```
 
-### 4. Laboratuvarda Saldırı Senaryosunu Tetikleme
+### 3. Laboratuvarda Saldırı Senaryosunu Tetikleme
 Tüm sistem hazır olduktan sonra, zafiyet zincirini (Kill Chain) otomatik olarak test etmek ve Mavi Takım için (Wazuh SIEM) log oluşturmak isterseniz Kali makinesini kullanabilirsiniz.
 
 Kali makinesine bağlanın:
@@ -75,7 +60,7 @@ cd ~/red_team
 ./test_apt_chain.sh
 ```
 
-### 5. Laboratuvarı Durdurma ve Silme
+### 4. Laboratuvarı Durdurma ve Silme
 Çalışmanız bittiğinde kaynak tüketimini durdurmak veya sistemi sıfırlamak için şu komutları kullanabilirsiniz:
 
 **Makineleri Geçici Olarak Durdurmak İçin (Veriler silinmez):**
