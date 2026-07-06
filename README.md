@@ -5,8 +5,8 @@ Bu proje, altyapı güvenliği, zafiyet yönetimi ve siber aldatma (deception) t
 ## Makine Bilgileri ve Roller
 
 * **`blue-server` (192.168.56.20)**: Savunma Merkezi & SIEM (Wazuh). Deception (sahte) DNS kayıtlarını barındırır.
-* **`red-target` (192.168.56.10)**: Kurban Sunucu. Üzerinde bilinçli olarak bırakılmış 6 farklı zafiyet vektörü bulunur.
-* **`kali-attacker` (192.168.56.30)**: Saldırgan Makinesi. Otomatize saldırı betikleri bu makineden çalıştırılır.
+* **`red-target` (192.168.56.10)**: Kurban Sunucu. Üzerinde bilinçli olarak bırakılmış 8 farklı zafiyet vektörü bulunur.
+* **`kali-attacker` (192.168.56.5)**: Saldırgan Makinesi. Otomatize saldırı betikleri bu makineden çalıştırılır.
 
 ## Barındırılan Zafiyet Vektörleri (APT Simülasyonu)
 
