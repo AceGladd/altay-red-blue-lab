@@ -19,7 +19,7 @@ apt-get update
 # Agent kurulumu ve blue-server'a otomatik bağlantı
 WAZUH_MANAGER="192.168.56.20" \
 WAZUH_AGENT_NAME="red-target" \
-  apt-get install -y wazuh-agent
+  apt-get install -y wazuh-agent=4.7.2-1
 
 systemctl daemon-reload
 systemctl enable wazuh-agent
