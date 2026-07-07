@@ -40,7 +40,13 @@ Eğer uzaktan bağlantıya ihtiyacınız yoksa ve sadece kendi bilgisayarınızd
 ```bash
 vagrant up
 ```
-Makinelere kendi bilgisayarınızdan bağlanmak için:
+
+Makineler açıldıktan sonra Savunma Merkezi (Wazuh Dashboard) paneline Windows ana makinenizden erişmek için tarayıcınızda şu adrese gidin:
+* **URL:** [https://localhost:8443/](https://localhost:8443/) (veya `https://192.168.56.20`)
+* **Kullanıcı Adı:** `admin`
+* **Şifre:** `SecretPassword`
+
+Makinelere kendi bilgisayarınızdan terminal ile bağlanmak için:
 ```bash
 vagrant ssh blue-server
 vagrant ssh red-target
