@@ -1,16 +1,65 @@
 <group name="altay_lab,custom_rules,">
 
-  <!-- ======================================================== -->
-  <!-- 1. DNS ZONE TRANSFER (AXFR) TESPITI                       --> 
-  <!-- blue-server bind9 syslog'undan AXFR isteği yakalar        -->
-  <!-- ======================================================== -->
   <rule id="100001" level="10">
-    <if_sid>1002</if_sid>
-    <match>AXFR started</match>
-    <description>Altay Lab: DNS Zone Transfer (AXFR) saldırısı tespit edildi - altay.local zonu sızdırılıyor!</description>
-    <group>dns_axfr,attack,</group>
-    <mitre>
-      <id>T1590.002</id>
-    </mitre>
+     <decoded_as>named-query</decoded_as>
+     <match>AXFR started</match>
+     <description>Altay Lab: DNS Zone Transfer (AXFR) saldirisi tespit edildi</description>
+     <group>dns_axfr,attack,</group>
+     <mitre><id>T1590.002</id></mitre>
   </rule>
+
+  <rule id="100002" level="10">
+    <if_sid>5715</if_sid>
+    <description>Altay Lab: SSH public key ile giris - calinan anahtar kullanimi olabilir</description>
+    <group>ssh,lateral_movement,attack,</group>
+    <mitre><id>T1078</id></mitre>
+  </rule>
+
+  <rule id="100003" level="10">
+    <if_sid>1002</if_sid>
+    <match>mount request</match>
+    <description>Altay Lab: NFS paylasimina yetkisiz mount girisimi</description>
+    <group>nfs,attack,</group>
+    <mitre><id>T1210</id></mitre>
+  </rule>
+
+  <rule id="100004" level="12">
+    <if_sid>80700,80701</if_sid>
+    <field name="audit.key">suid_abuse|suid_hidden_cp</field>
+    <description>Altay Lab: SUID araci (.hidden_cp) ile kritik dosya kopyalama - PrivEsc</description>
+    <group>privilege_escalation,attack,</group>
+    <mitre><id>T1548.001</id></mitre>
+  </rule>
+
+  <rule id="100005" level="12">
+    <if_sid>80700,80701</if_sid>
+    <field name="audit.key">sudo_find</field>
+    <description>Altay Lab: Root yetkili find komutu ile PrivEsc (GTFOBins/Sudoers)</description>
+    <group>privilege_escalation,attack,</group>
+    <mitre><id>T1548.003</id></mitre>
+  </rule>
+
+  <rule id="100006" level="12">
+    <if_sid>550,554</if_sid>
+    <field name="file">authorized_keys</field>
+    <description>Altay Lab: authorized_keys dosyasi degistirildi - Backdoor/Persistence</description>
+    <group>persistence,attack,</group>
+    <mitre><id>T1098.004</id></mitre>
+  </rule>
+
+  <rule id="100007" level="6">
+    <decoded_as>named-query</decoded_as>
+    <regex>IN TXT</regex>
+    <description>Altay Lab: DNS TXT sorgusu gozlemlendi - potansiyel DNS tunneling</description>
+    <group>dns_tunnel,</group>
+    <mitre><id>T1048.001</id></mitre>
+  </rule>
+
+  <rule id="100008" level="14" frequency="10" timeframe="60">
+    <if_matched_sid>100007</if_matched_sid>
+    <description>KRITIK: DNS Tunneling ile veri sizdirma tespit edildi (Exfiltration)</description>
+    <group>dns_tunnel,exfiltration,attack,</group>
+    <mitre><id>T1048.001</id></mitre>
+  </rule>
+
 </group>

@@ -1,0 +1,9 @@
+<decoder name="named-query">
+  <prematch>^\d\d-\w+-\d\d\d\d \d\d:\d\d:\d\d\.\d+ </prematch>
+</decoder>
+
+<decoder name="named-query-child">
+  <parent>named-query</parent>
+  <regex>^(\d\d-\w+-\d\d\d\d \d\d:\d\d:\d\d\.\d+) (\S+): \S+: client \S+ (\d+\.\d+\.\d+\.\d+)#\d+ \((\S+)\): (.+)$</regex>
+  <order>timestamp, category, srcip, query, extra</order>
+</decoder>
