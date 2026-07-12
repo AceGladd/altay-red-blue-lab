@@ -1,6 +1,91 @@
 ---
-- name: Hardening Red Target (Blue Team Task)
+# ==============================================================================
+# AĞ VE DNS GÜVENLİĞİ SIKILAŞTIRMASI (Çalıştırılacağı Yer: blue-server)
+# ==============================================================================
+- name: Ağ, DNS ve Güvenlik Duvarı Yamaları
+  hosts: localhost
+  become: yes
+  tasks:
+
+    - name: ZAFİYET 1 (AXFR) - BIND9 Zone Transfer İptali ve DNSSEC Aktif Edilmesi
+      blockinfile:
+        path: /etc/bind/named.conf.options
+        marker: "// {mark} ANSIBLE SIKILASTIRMA KORUMASI"
+        insertafter: 'options \{'
+        content: |
+          allow-transfer { none; };
+          dnssec-validation auto;
+      notify: BIND9 Servisini Yeniden Baslat
+
+    - name: ZAFİYET 8 (DNS Tünelleme) - iptables Rate Limiting (Saniyede 5 istek limiti)
+      iptables:
+        chain: INPUT
+        protocol: udp
+        destination_port: 53
+        match: limit
+        limit: 5/s
+        limit_burst: 10
+        jump: ACCEPT
+
+    - name: ZAFİYET 8 (DNS Tünelleme) - Limiti Aşan Anormal İstekleri Düşür (DROP)
+      iptables:
+        chain: INPUT
+        protocol: udp
+        destination_port: 53
+        jump: DROP
+
+  handlers:
+    - name: BIND9 Servisini Yeniden Baslat
+      service:
+        name: bind9
+        state: restarted
+
+
+# ==============================================================================
+#UÇ NOKTA VE SİSTEM SIKILAŞTIRMASI (Çalıştırılacağı Yer: red-target)
+# ==============================================================================
+- name: Uç Nokta, Yetki ve İzolasyon Yamaları
   hosts: red-target
   become: yes
   tasks:
-    # TODO: Define hardening tasks here
+
+    - name: ZAFİYET 2 (OS Command Injection) - Web Girdilerini Filtrele (Sanitization)
+      replace:
+        path: /var/www/html/index.php # (Not: Web uygulamasının kurulu olduğu dizin)
+        regexp: 'system\("ping -c 4 " \. \$_POST\["ip"\]\);'
+        replace: '$ip = escapeshellarg($_POST["ip"]); system("ping -c 4 " . $ip);'
+      ignore_errors: yes
+
+    - name: ZAFİYET 3 (Güvensiz NFS) - no_root_squash Kuralını root_squash Olarak Değiştir
+      replace:
+        path: /etc/exports
+        regexp: 'no_root_squash'
+        replace: 'root_squash'
+      notify: NFS Kurallarini Yenile
+
+    - name: ZAFİYET 4 (Açığa Çıkan Anahtar) - Unutulan id_rsa Dosyasını Sistemden Sil
+      file:
+        path: /home/developer/id_rsa
+        state: absent
+
+    - name: ZAFİYET 5 (Yetkisiz Arka Kapı) - authorized_keys Dosyasını Sıfırla ve Mühürle
+      copy:
+        content: ""
+        dest: /home/developer/.ssh/authorized_keys
+        mode: '0600'
+        owner: developer
+
+    - name: ZAFİYET 6 (SUID Misconfiguration) - .hidden_cp Üzerindeki SUID Yetkisini Kaldır
+      file:
+        path: /usr/local/bin/.hidden_cp
+        mode: 'u-s'
+
+    - name: ZAFİYET 7 (Sudoers Misconfiguration) - developer Kullanıcısının NOPASSWD İznini Sil
+      lineinfile:
+        path: /etc/sudoers.d/developer
+        state: absent
+        regexp: 'NOPASSWD'
+
+  handlers:
+    - name: NFS Kurallarini Yenile
+      command: exportfs -ra
