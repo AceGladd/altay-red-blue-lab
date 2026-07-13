@@ -49,12 +49,18 @@
   become: yes
   tasks:
 
-    - name: ZAFİYET 2 (OS Command Injection) - Web Girdilerini Filtrele (Sanitization)
+    - name: ZAFİYET 2 (OS Command Injection) - shlex Modülünü Uygulamaya Ekle
+      lineinfile:
+        path: /opt/vuln_webapp/app.py
+        insertbefore: '^import subprocess'
+        line: 'import shlex'
+
+    - name: ZAFİYET 2 (OS Command Injection) - IP Girdisini shlex ile Güvenli Hale Getir
       replace:
-        path: /var/www/html/index.php # (Not: Web uygulamasının kurulu olduğu dizin)
-        regexp: 'system\("ping -c 4 " \. \$_POST\["ip"\]\);'
-        replace: '$ip = escapeshellarg($_POST["ip"]); system("ping -c 4 " . $ip);'
-      ignore_errors: yes
+        path: /opt/vuln_webapp/app.py
+        regexp: 'cmd = f"ping -c 3 .*'
+        replace: 'cmd = f"ping -c 3 {shlex.quote(ip)}"'
+      notify: Web Uygulamasini Yeniden Baslat
 
     - name: ZAFİYET 3 (Güvensiz NFS) - no_root_squash Kuralını root_squash Olarak Değiştir
       replace:
@@ -79,6 +85,7 @@
       file:
         path: /usr/local/bin/.hidden_cp
         mode: 'u-s'
+      ignore_errors: yes
 
     - name: ZAFİYET 7 (Sudoers Misconfiguration) - developer Kullanıcısının NOPASSWD İznini Sil
       lineinfile:
@@ -89,3 +96,8 @@
   handlers:
     - name: NFS Kurallarini Yenile
       command: exportfs -ra
+
+    - name: Web Uygulamasini Yeniden Baslat
+      service:
+        name: vuln_webapp
+        state: restarted
