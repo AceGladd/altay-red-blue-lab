@@ -55,7 +55,7 @@
     <mitre><id>T1048.001</id></mitre>
   </rule>
 
-  <rule id="100008" level="14" frequency="10" timeframe="60">
+  <rule id="100008" level="14" frequency="5" timeframe="60">
     <if_matched_sid>100007</if_matched_sid>
     <description>KRITIK: DNS Tunneling ile veri sizdirma tespit edildi (Exfiltration)</description>
     <group>dns_tunnel,exfiltration,attack,</group>
